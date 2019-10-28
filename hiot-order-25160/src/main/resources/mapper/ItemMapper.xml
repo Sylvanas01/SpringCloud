@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hand.hiot.infra.mapper.ItemMapper">
+
+
+    <select id="getIdByCode" resultType="java.lang.Long"
+                         parameterType="com.hand.hiot.domain.entity.Item">
+
+   SELECT item_id
+    FROM hiot_item_25160 WHERE item_code = #{itemCode};
+
+    </select>
+
+    <select id="getCodeById" resultType="java.lang.String"
+            parameterType="com.hand.hiot.domain.entity.Item">
+
+   SELECT item_code
+    FROM hiot_item_25160 WHERE item_id = #{itemId};
+
+    </select>
+
+
+    <select id="getDescById" resultType="java.lang.String"
+            parameterType="com.hand.hiot.domain.entity.Item">
+
+   SELECT item_description
+    FROM hiot_item_25160 WHERE item_id = #{itemId};
+
+    </select>
+
+    <select id="getItems" resultType="com.hand.hiot.domain.entity.Item">
+        select * from hiot_item_25160 where 1=1
+        <if test="itemCode != '' and itemCode != null">
+            AND ITEM_CODE LIKE concat('%',#{itemCode},'%')
+        </if>
+
+        <if test="itemDescription != '' and itemDescription != null">
+            AND ITEM_DESCRIPTION LIKE concat('%',#{itemDescription},'%')
+        </if>
+    </select>
+</mapper>
