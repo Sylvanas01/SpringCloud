@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src='../static/js/jquery-2.2.3.min.js'></script>
+    <script src='../static/bootstrap/js/bootstrap.js'></script>
+    <script src='../static/bootstrap/js/bootstrap-table.js'></script>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap-select.min.css"/>
+    <script src="../static/bootstrap/js/bootstrap-table-zh-CN.min.js"></script>
+    <script src="../static/bootstrap/js/bootstrap-select.min.js"></script>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap-datetimepicker.min.css"/>
+    <script src='../static/bootstrap/js/bootstrap-datetimepicker.min.js'></script>
+    <script src='../static/bootstrap/js/bootstrap-datetimepicker.zh-CN.js'></script>
+</head>
+<body>
+<div class="container">
+    <div class="row row-centered">
+        <div class="well col-centered">
+            <input type="hidden" id="gexinghuashezhi" value="0"/>
+            <form class="form-horizontal" id="messageList" name="messageList" role="form">
+
+                <input name="nodeMessageStr" type="hidden" id="nodeMessageStr" value=""/>
+                <fieldset>
+                    <table width="100%" border="0">
+                        <tr>
+                            <td>
+                                <div>
+                                    <label class="control-label">资费说明：</label>
+                                    <input type="radio" name="setmealType" value="01" checked="checked">
+                                    <label class="control-label" style="color: red">300元/年</label>
+                                    <input type="radio" name="setmealType" value="00">
+                                    <label class="control-label" style="color: red">200元/年</label>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </fieldset>
+                <fieldset>
+                    <legend>业务节点信息</legend>
+                    <table class="table table-bordered" align="center">
+                        <thead>
+                        <th class="col-md-4">业务模块</th>
+                        <th class="col-md-4">短信提醒节点</th>
+                        <th class="col-md-4">手机号码</th>
+                        </thead>
+                        <tbody id="message">
+                        </tbody>
+                    </table>
+                </fieldset>
+
+                <fieldset>
+                    <legend>其他个人信息</legend>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">个人姓名</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="name" type="text" name="name">
+                        </div>
+                        <label class="col-sm-2 control-label">个人地址</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="address" type="text" name="address">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">手机号</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="phone" type="text" name="phone">
+                        </div>
+                        <label class="col-sm-2 control-label">邮箱</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="telephone" type="text" name="telephone">
+                        </div>
+                    </div>
+                </fieldset>
+
+
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" onclick="submitMessage()" class="btn btn-default">
+                保存
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addPhones" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body" style="overflow: hidden">
+                <form id="updateType">
+                    <input type="hidden" class="form-control" id="id" name="id">
+                    <input type="hidden" class="form-control" id="typeId" name="typeId">
+                    <div class="form-group">
+                        <div class="col-sm-5">
+                            <label class="control-label">手机号</label>
+                            <input type="text" id="phones" class="form-control" name="phone">
+                        </div>
+                        <div class="col-sm-5">
+                            <label class=" control-label">验证码</label>
+                            <input type="text" id="code" class="form-control" name="code">
+                        </div>
+                        <input id="typeDetail" type="hidden" value=""/>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭
+                </button>
+                <button type="button" onclick="submitPhone()" class="btn btn-primary">
+                    确认
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+<div class="modal fade" id="selfOpen" tabindex="-1" role="dialog" data-backdrop="static"
+     aria-labelledby="myModalLabel">
+    <div style="width: 40%;" class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel" style="font-size: large">个性化设置</h4>
+            </div>
+            <div class="modal-body">
+                <table id="spplierDIV" class="table table-bordered align-md table-cs-hover" align="center">
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="saveSelf()">确定</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var resultMap = {};
+    var typeList;
+    var typeDetailList;
+    $(function () {
+        $.ajax({
+            url: '../type/findType',
+            type: 'get',
+            success: function (data) {
+                typeof(data);
+                typeList = JSON.parse(JSON.stringify(data));
+                $.ajax({
+                    url: '../typeDetail/findDetail',
+                    type: 'get',
+                    success: function (data) {
+                        typeDetailList = JSON.parse(JSON.stringify(data));
+                        var html = "";
+                        typeof(typeList);
+                        for (var i in typeList) {
+                            html += '<tr id="' + typeList[i].id + '"><td>' + typeList[i].typeName + '</td><td>';
+                            for (var j in typeDetailList) {
+                                if (typeDetailList[j].typeId == typeList[i].id) {
+                                    html += ' <input type="checkbox" name="nodeCheckBox" value="' + typeDetailList[j].id + '"/>' + typeDetailList[j].detailValue + '</br>';
+                                }
+                            }
+                            html += '</td><td>手机：<input type="text" style="width:40%" id="input' + typeList[i].id + '"/>' + '<input type="hidden" id="choseNode' + typeList[i].id + '"  value="0"/>' +
+                                '<button class="btn btn-info" style="margin: 0 10px;" id="btn' + typeList[i].id + '" type="button" onclick=addPhones("' + typeList[i].id + '")>激活</button>' +
+                                '<button class="btn btn-primary" type="button" onclick=initDiv("' + typeList[i].id + '")>个性化设置</button>';
+                            html += '</td></tr>'
+                        }
+                        $("#message").html(html);
+                    }
+                });
+
+            }
+        });
+
+
+    });
+    $.fn.serializeObject = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    }
+
+    function isEmpty(value) {
+        if (value == null || value == undefined || value == "") {
+            return true;
+        }
+        return false;
+    }
+
+    //激活手机号
+    function addPhones(id) {
+        var phone = $("#input" + id).val();
+        if (isEmpty(phone)) {
+            alert("请填写手机号码。");
+            return false;
+        }
+        //判断是否选中节点
+        var nodeList = $("#" + id).find("input[name='nodeCheckBox']:checked");
+        if (isEmpty(nodeList) || nodeList.length == 0) {
+            alert("请选择节点");
+            return false;
+        }
+        $("#typeId").val(id);
+        $("#phones").val(phone);
+        $("#addPhones").modal();
+    }
+
+    //激活手机号保存按钮
+    function submitPhone() {
+        var phone = $("#phones").val();
+        var id = $("#typeId").val();
+        $("#choseNode" + id).val("1");
+        $("#gexinghuashezhi").val("1");
+
+        var nodeList = $("#" + id).find("input[name='nodeCheckBox']:checked");
+        for (var i = 0; i < nodeList.length; i++) {
+            resultMap[nodeList[i].value] = phone + ";";
+        }
+        $("#nodeMessageStr").val(JSON.stringify(resultMap));
+        $("#btn" + id).removeClass("btn-info");
+        $("#btn" + id).addClass("btn-success");
+        $("#addPhones").modal("hide");
+    }
+
+    //个性化设置
+    function initDiv(id) {
+        var choseNode = $("#choseNode" + id).val()
+        if (choseNode == "1") {
+            $("#selfOpen").modal();
+            var phone = $("#input" + id).val();
+            var html = '<input type="hidden" id="typeIds" value="' + id + '">';
+            var className = 'selfPhone' + id;
+            var selfPhone = $("." + className);
+            //获取采购商
+            $.ajax({
+                url: "../suppiler/getSuppiler",
+                type: 'get',
+                success: function (data) {
+                    typeof(data);
+                    supplierList = JSON.parse(JSON.stringify(data));
+                    for (var i in supplierList) {
+                        //判断激活框里的电话号码是不是空的
+                        if (isEmpty(selfPhone[i]) || isEmpty(selfPhone[i].value)) {
+                            html += '<tr><td>' + supplierList[i].suppilerName + '<input type="hidden" value="' + supplierList[i].suppilerCode + '" class="suppilerCode">' +
+                                '</td><td>手机号码：<input class="' + className + '" type="text" value="' + phone + '"/></td></tr>';
+                        } else {
+                            html += '<tr><td>' + supplierList[i].suppilerName + '<input type="hidden" value="' + supplierList[i].suppilerCode + '" class="suppilerCode">' +
+                                '</td><td>手机号码：<input class="' + className + '" type="text" value="' + supplierList[spplier].value + '"/></td></tr>';
+                        }
+                    }
+                    $("#spplierDIV").html(html);
+                }
+            });
+
+
+        } else {
+            alert("请先激活手机号码。");
+        }
+    }
+
+    //保存个性化设置
+
+    function saveSelf() {
+        var typeId = $('#typeIds').val();
+        var result = "";
+        var phone = $("#input" + typeId).val();
+        var className = 'selfPhone' + typeId;
+        var selfPhone = $("." + className);
+        var suppilerCode = $(".suppilerCode");
+        var nodeList = $("#" + typeId).find("input[name='nodeCheckBox']:checked");
+        for (var node = 0; node < nodeList.length; node++) {
+            result = phone + ';';
+            for (var n = 0; n < selfPhone.length; n++) {
+                //只记录电话号码不一样的
+                if (selfPhone[n].value != phone) {
+                    result += selfPhone[n].value + "-" + suppilerCode[n].value + ";";
+                }
+            }
+            resultMap[nodeList[node].value] = result;
+        }
+        //修改新的节点列表
+        $("#nodeMessageStr").val(JSON.stringify(resultMap));
+    }
+
+
+    //提交表单
+    function submitMessage() {
+        var checkboxs = document.getElementsByName("nodeCheckBox");
+        var sel = false;
+        var setMeal_type = document.getElementsByName("setmealType");
+        var packAge = false;
+        var name = $("#name").val;
+        var address = $("#address").val;
+        var phone = $("#phone").val;
+        var telephone = $("#telephone").val;
+
+        for (var i = 0; i < checkboxs.length; i++) {
+            if (checkboxs[i].checked) {
+                sel = true;
+            }
+        }
+        //资费类型
+        for (var y = 0; y < setMeal_type.length; y++) {
+            if (setMeal_type[y].checked) {
+                packAge = true;
+            }
+        }
+
+        if (packAge == false) {
+            alert("请选择您要开通的资费类型！");
+            return false;
+        }
+        if (sel == false) {
+            alert("请选择您要开通的信息提醒节点信息！");
+            return false;
+        }
+
+        if (name == "") {
+            alert("请填写名称！");
+            $("#name").focus();
+            return false;
+        }
+
+        if (address == "") {
+            alert("请填写地址！");
+            $("#address").focus();
+            return false;
+        }
+
+        if (phone == "") {
+            alert("请填写电话号码!");
+            $("#phone").focus();
+            return false;
+        }
+
+        if (telephone == "") {
+            alert("请填写邮箱！");
+            $("#telephone").focus();
+            return false;
+        }
+
+
+        var gexinghuashezhi = $("#gexinghuashezhi").val()
+
+        if(gexinghuashezhi == "0"){
+            alert("请先激活号码。")
+            return false;
+        }
+
+        var data = $('#messageList').serializeObject();
+        $.ajax({
+            url: "../order/messageSubmit",
+            data: data,
+            type: 'POST',
+            success: function (data) {
+                alert(data);
+                location.reload();
+            },
+        });
+    }
+</script>
+</body>
+</html>

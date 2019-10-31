@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src='../static/js/jquery-2.2.3.min.js'></script>
+    <script src='../static/bootstrap/js/bootstrap.js'></script>
+    <script src='../static/bootstrap/js/bootstrap-table.js'></script>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap-select.min.css"/>
+    <script src="../static/bootstrap/js/bootstrap-table-zh-CN.min.js"></script>
+    <script src="../static/bootstrap/js/bootstrap-select.min.js"></script>
+    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap-datetimepicker.min.css"/>
+    <script src='../static/bootstrap/js/bootstrap-datetimepicker.min.js'></script>
+    <script src='../static/bootstrap/js/bootstrap-datetimepicker.zh-CN.js'></script>
+</head>
+<body>
+<div class="container">
+    <div class="row row-centered">
+        <div class="well col-centered">
+
+            <form class="form-horizontal" id="userList" role="form">
+                <fieldset>
+                    <legend>个人信息表</legend>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">个人姓名</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="name" type="text" name="name">
+                        </div>
+                        <label class="col-sm-2 control-label">个人地址</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="address" type="text" name="address">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">手机号</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="phone" type="text" name="phone">
+                        </div>
+                        <label class="col-sm-2 control-label">邮箱</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id="telephone" type="text" name="telephone">
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>其他个人信息</legend>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">民族</label>
+                        <div class="col-sm-10">
+                            <select id="mz" name="mz" class="selectpicker" type="text"   data-live-search="true">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">学历</label>
+                        <div class="col-sm-10">
+                            <select id="xl" name="xl" class="selectpicker" type="text"   data-live-search="true">
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">出生日期</label>
+                        <div class="col-sm-4">
+                                <input type="text" id="time" name="time" class="form-control">
+                            </div>
+                            </select>
+                        </div>
+                </fieldset>
+            </form>
+        </div>
+            <div class="modal-footer">
+                <button type="button" onclick="addUser()" class="btn btn-primary">
+                    保存
+                </button>
+            </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+
+
+    $(function() {
+
+        $(window).on('load', function() {
+            $('.selectpicker').selectpicker('refresh');
+        });
+        getMz();
+        getXl();
+
+    });
+
+    function getMz() {
+        $.ajax({
+            url: "/typeDetail/getDetailBytypeId",    //后台controller中的请求路径
+            type: 'POST',
+            async: false,
+            datatype: 'json',
+            data: {typeId: 2},
+            success: function (data) {
+                if (data) {
+                    var html = '<option selected value=" ">请选择</option>\');';
+                    for (var i in data) {
+                        //拼接成多个<option><option/>
+                        html = '<option value="' + data[i].detailCode + '">' + data[i].detailValue + '</option>'+html;
+                    }
+                    $("#mz").html(html);    //根据parkID(根据你自己的ID写)填充到select标签中
+                }
+            },
+            error: function () {
+                alert('查询民族信息出错');
+            }
+        });
+    }
+    
+    function getXl() {
+        $.ajax({
+            url: "/typeDetail/getDetailBytypeId",    //后台controller中的请求路径
+            type: 'POST',
+            async: false,
+            datatype: 'json',
+            data: {typeId: 1},
+            success: function (data) {
+                if (data) {
+                    var html = '<option selected value=" ">请选择</option>\');';
+                    for (var i in data) {
+                        //拼接成多个<option><option/>
+                        html = '<option value="' + data[i].detailCode + '">' + data[i].detailValue + '</option>'+html;
+                    }
+                    $("#xl").html(html);    //根据parkID(根据你自己的ID写)填充到select标签中
+                }
+            },
+            error: function () {
+                alert('查询学历信息出错');
+            }
+        });
+    }
+    $("#time").val("请选择日期");
+    $("#time").datetimepicker({
+        format: "yyyy-mm-dd",
+        autoclose: true,
+        todayBtn: "linked",
+        language: 'zh-CN',
+        minView:2,
+        todayHighlight:true,
+    });
+
+    $.fn.serializeObject = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    }
+    function addUser() {
+        var formData = $('#userList').serializeObject();
+
+        $.ajax({
+            url: '../index/addUser',
+            type: 'post',
+            data: formData,
+            success: function (data) {
+                alert(data);
+            }
+        });
+
+    }
+    
+</script>
+</body>
+</html>
